@@ -1,0 +1,124 @@
+@startuml
+
+skinparam componentStyle uml2
+
+component [WorkflowContext]
+note right of [WorkflowContext]
+The workflow context is responsible 
+for management and delivering 
+reminders to the patients. 
+end note
+component [EnterpriseManagementContext]
+note right of [EnterpriseManagementContext]
+The Enterprise management context 
+is responsible for management 
+the Organization and Practice 
+data. 
+end note
+component [CCPContext]
+note right of [CCPContext]
+The CCP Context is the system 
+that needs to be decoupled in 
+order to organize and facilitate 
+the processes 
+end note
+component [IntegrationsContext]
+note right of [IntegrationsContext]
+The Integration context is responsible 
+for the integration with PMS. 
+
+end note
+component [UrlShortenerContext]
+note right of [UrlShortenerContext]
+The URL Shortener context is responsible 
+for a manage URL shortener. 
+end note
+component [PMSContext]
+note right of [PMSContext]
+Service (external system) used 
+by the practices to schedule and 
+manage patients and appointments. 
+
+end note
+component [Twillio]
+note right of [Twillio]
+Service (external system) to send 
+messages and make call to patients 
+
+end note
+component [MailChimp]
+note right of [MailChimp]
+Service (external system) to send 
+email to patients 
+end note
+component [Jotform]
+note right of [Jotform]
+Service (external system) to the 
+patients fill forms 
+end note
+component [ModeAnalytics]
+note right of [ModeAnalytics]
+Service (external system) to present 
+analytics graph to the practitioners 
+
+end note
+component [Vendasta]
+note right of [Vendasta]
+Service (external system) to manage 
+the practice reputation 
+end note
+component [CallRails]
+note right of [CallRails]
+Service (external system) to record 
+and track practice calls 
+end note
+
+[IntegrationsContext]<-->[CCPContext] : Partnership (DB)
+
+interface "Upstream-Downstream" as IntegrationsContext_to_PMSContext
+[PMSContext] --> IntegrationsContext_to_PMSContext
+IntegrationsContext_to_PMSContext <.. [IntegrationsContext] : use via ANTICORRUPTION_LAYER
+
+interface "REST HTTP && SDK" as CCPContext_to_Twillio
+[Twillio] --> CCPContext_to_Twillio : OPEN_HOST_SERVICE, PUBLISHED_LANGUAGE
+CCPContext_to_Twillio <.. [CCPContext] : use as CONFORMIST
+
+interface "REST HTTP" as CCPContext_to_UrlShortenerContext
+[UrlShortenerContext] --> CCPContext_to_UrlShortenerContext : OPEN_HOST_SERVICE, PUBLISHED_LANGUAGE
+CCPContext_to_UrlShortenerContext <.. [CCPContext] : consume
+
+interface "SDK" as CCPContext_to_MailChimp
+[MailChimp] --> CCPContext_to_MailChimp : OPEN_HOST_SERVICE, PUBLISHED_LANGUAGE
+CCPContext_to_MailChimp <.. [CCPContext] : consume
+
+interface "REST HTTP" as CCPContext_to_Jotform
+[Jotform] --> CCPContext_to_Jotform : OPEN_HOST_SERVICE, PUBLISHED_LANGUAGE
+CCPContext_to_Jotform <.. [CCPContext] : consume
+
+interface "REST HTTP" as CCPContext_to_CallRails
+[CallRails] --> CCPContext_to_CallRails : OPEN_HOST_SERVICE, PUBLISHED_LANGUAGE
+CCPContext_to_CallRails <.. [CCPContext] : consume
+
+interface "REST HTTP" as CCPContext_to_Vendasta
+[Vendasta] --> CCPContext_to_Vendasta : OPEN_HOST_SERVICE, PUBLISHED_LANGUAGE
+CCPContext_to_Vendasta <.. [CCPContext] : consume
+
+interface "DB" as CCPContext_to_ModeAnalytics
+[ModeAnalytics] --> CCPContext_to_ModeAnalytics : OPEN_HOST_SERVICE, PUBLISHED_LANGUAGE
+CCPContext_to_ModeAnalytics <.. [CCPContext] : consume
+
+interface "REST HTTP" as CCPContext_to_WorkflowContext
+[WorkflowContext] --> CCPContext_to_WorkflowContext
+CCPContext_to_WorkflowContext <.. [CCPContext] : consume
+
+interface "REST HTTP" as WorkflowContext_to_CCPContext
+[CCPContext] --> WorkflowContext_to_CCPContext
+WorkflowContext_to_CCPContext <.. [WorkflowContext] : use Aggregates Workflows, Organizations via ANTICORRUPTION_LAYER
+
+interface "Kafka" as EnterpriseManagementContext_to_CCPContext
+[CCPContext] --> EnterpriseManagementContext_to_CCPContext
+EnterpriseManagementContext_to_CCPContext <.. [EnterpriseManagementContext] : use Aggregate Organizations via ANTICORRUPTION_LAYER
+
+
+
+@enduml
